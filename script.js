@@ -1,6 +1,7 @@
 /* =========================================================
-   FIFA ROCKET LEAGUE - VIEWER PÚBLICO v2
+   FIFA ROCKET LEAGUE - VIEWER PÚBLICO v2.1
    - Fichas completas con fondo difuminado para Ligas y Selecciones
+   - Historial completo de partidos por selección con acceso a stats
    - Confederaciones con herencia automática Liga -> Selección
    - Filtros por confederación en Afiliados, Selecciones y Ranking
    - Modo Oscuro / Claro persistente + Responsive PC y Móvil
@@ -802,9 +803,10 @@ window.abrirModalSeleccion = function (seleccionId) {
                 ${esc(conf ? `${conf.nombre} (${conf.tag})` : "Sin confederación")}
               </strong>
             </div>
-            <div class="kv-item">
+            <div class="kv-item clickable" onclick="abrirModalHistorialSeleccion(${sel.id})" role="button" tabindex="0">
               <small>Historial de Series</small>
               <strong>⚽ ${victorias}G - ${partidosJugados.length - victorias}P (${partidosJugados.length} jug.)</strong>
+              <span class="kv-action-link">Ver historial completo →</span>
             </div>
           </div>
 
@@ -901,6 +903,99 @@ window.abrirModalSeleccion = function (seleccionId) {
   `;
 
   abrirModalPorId("modal-seleccion");
+};
+
+window.abrirModalHistorialSeleccion = function (seleccionId) {
+  const sel = getSeleccion(seleccionId);
+  if (!sel) return;
+
+  const partidosJugados = datos.partidos
+    .filter((p) => p.estado === "Finalizado" && (p.localId === sel.id || p.visitanteId === sel.id))
+    .sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")) || b.id - a.id);
+
+  let victorias = 0;
+  let derrotas = 0;
+
+  const filasHtml = partidosJugados
+    .map((p) => {
+      const esLocal = p.localId === sel.id;
+      const rival = getSeleccion(esLocal ? p.visitanteId : p.localId);
+      const ptsFavor = esLocal ? p.seriesLocal : p.seriesVisitante;
+      const ptsContra = esLocal ? p.seriesVisitante : p.seriesLocal;
+      const gano = ptsFavor > ptsContra;
+
+      if (gano) victorias++;
+      else derrotas++;
+
+      return `
+        <div class="history-row" onclick="abrirModalPartido(${p.id})" title="Clic para ver estadísticas por partida">
+          <span class="result-pill ${gano ? "win" : "loss"}">${gano ? "Victoria" : "Derrota"}</span>
+
+          <div class="history-rival">
+            <img class="avatar-sm" src="${esc(rival?.logo || PLACEHOLDER_LOGO)}" alt="" onerror="this.src='${PLACEHOLDER_LOGO}'" />
+            <div style="min-width:0;">
+              <strong style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                vs ${esc(rival?.nombre || "Rival")} <span class="badge gold">${esc(rival?.tag || "—")}</span>
+              </strong>
+              <div class="muted" style="font-size:.75rem;">
+                ${esc(p.tipo)} · ${esc(p.formato)} · 📅 ${esc(p.fecha)} ${esLocal ? "(Local)" : "(Visitante)"}
+              </div>
+            </div>
+          </div>
+
+          <div class="history-score">${ptsFavor} - ${ptsContra}</div>
+
+          <div class="history-stats-cta">
+            <span class="badge">Ver stats →</span>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const total = partidosJugados.length;
+  const efectividad = total ? Math.round((victorias / total) * 100) : 0;
+
+  document.getElementById("modal-historial-header").innerHTML = `
+    <img class="avatar-sm" src="${esc(sel.logo || PLACEHOLDER_LOGO)}" alt="" onerror="this.src='${PLACEHOLDER_LOGO}'" />
+    <div>
+      <h3 style="margin:0;">Historial de Series — ${esc(sel.nombre)} (${esc(sel.tag)})</h3>
+      <small style="color:#cbd5e1;">Todos los partidos disputados y sus resultados</small>
+    </div>
+  `;
+
+  document.getElementById("modal-historial-body").innerHTML = `
+    <div style="margin-bottom:16px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="abrirModalSeleccion(${sel.id})">← Volver a ficha de ${esc(sel.nombre)}</button>
+    </div>
+
+    <div class="history-summary-strip">
+      <div class="history-stat-box">
+        <strong>${total}</strong>
+        <small>Jugados</small>
+      </div>
+      <div class="history-stat-box">
+        <strong style="color:var(--positive);">${victorias}</strong>
+        <small>Victorias</small>
+      </div>
+      <div class="history-stat-box">
+        <strong style="color:var(--negative);">${derrotas}</strong>
+        <small>Derrotas</small>
+      </div>
+      <div class="history-stat-box">
+        <strong style="color:var(--fifa-blue);">${efectividad}%</strong>
+        <small>Efectividad</small>
+      </div>
+    </div>
+
+    ${
+      total
+        ? `<div class="history-list">${filasHtml}</div>`
+        : `<div class="empty-state">Esta selección aún no tiene partidos finalizados registrados.</div>`
+    }
+  `;
+
+  abrirModalPorId("modal-historial");
 };
 
 window.copiarTexto = function (texto, msg) {
