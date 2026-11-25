@@ -1733,3 +1733,129 @@ img {
     font-size: 1.25rem;
   }
 }
+
+/* ================= HISTORIAL COMPLETO DE SELECCIÓN ================= */
+.kv-item.clickable {
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, background-color 0.2s;
+}
+
+.kv-item.clickable:hover {
+  border-color: var(--fifa-blue);
+  transform: translateY(-1px);
+}
+
+.kv-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--fifa-blue);
+}
+
+.history-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.history-stat-box {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.history-stat-box strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.history-stat-box small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: 105px 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.history-row:hover {
+  border-color: var(--fifa-blue);
+  transform: translateX(2px);
+}
+
+.result-pill {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-pill.win {
+  background: rgba(22, 163, 74, 0.16);
+  color: var(--positive);
+}
+
+.result-pill.loss {
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--negative);
+}
+
+.history-rival {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.history-score {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 720px) {
+  .history-summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .history-row {
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+  }
+
+  .history-row .history-stats-cta {
+    grid-column: span 2;
+    text-align: right;
+  }
+}
