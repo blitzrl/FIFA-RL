@@ -57,6 +57,19 @@
       "estado": "Activa",
       "descripcion": "",
       "competicionesIds": []
+    },
+    {
+      "id": 4,
+      "nombre": "LIGA BETPLAY DIMAYOR 🇨🇴",
+      "region": "SAM",
+      "confederacionId": 2,
+      "discord": "https://discord.gg/7YJgYTPwX",
+      "logo": "https://static.wikia.nocookie.net/logopedia/images/c/c9/Liga_aguila_2015.png/revision/latest?cb=20210410195803&path-prefix=es",
+      "banner": "",
+      "equipos": 10,
+      "estado": "Activa",
+      "descripcion": "",
+      "competicionesIds": []
     }
   ],
   "selecciones": [
@@ -91,6 +104,13 @@
     },
     {
       "ligaId": 3,
+      "organizacion": 5,
+      "staff": 5,
+      "actividad": 5,
+      "competencia": 5
+    },
+    {
+      "ligaId": 4,
       "organizacion": 5,
       "staff": 5,
       "actividad": 5,
