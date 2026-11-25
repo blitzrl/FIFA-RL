@@ -90,31 +90,31 @@
   "rankingLigas": [
     {
       "ligaId": 1,
-      "organizacion": 10,
-      "staff": 8,
-      "actividad": 5,
-      "competencia": 7
+      "organizacion": 8,
+      "staff": 7,
+      "actividad": 4,
+      "competencia": 6
     },
     {
       "ligaId": 2,
       "organizacion": 5,
-      "staff": 5,
-      "actividad": 5,
-      "competencia": 5
+      "staff": 7,
+      "actividad": 8,
+      "competencia": 3
     },
     {
       "ligaId": 3,
-      "organizacion": 5,
-      "staff": 5,
-      "actividad": 5,
-      "competencia": 5
+      "organizacion": 10,
+      "staff": 9,
+      "actividad": 8,
+      "competencia": 8
     },
     {
       "ligaId": 4,
       "organizacion": 5,
-      "staff": 5,
-      "actividad": 5,
-      "competencia": 5
+      "staff": 3,
+      "actividad": 7,
+      "competencia": 7
     }
   ],
   "noticias": [],
