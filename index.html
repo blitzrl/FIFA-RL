@@ -52,7 +52,7 @@
     </div>
   </header>
 
-  <!-- AVISO LOCAL (Solo aparece si el navegador bloquea fetch al abrir sin servidor) -->
+  <!-- AVISO LOCAL (Si el navegador bloquea fetch al abrir sin servidor) -->
   <div id="cors-banner" class="cors-banner" hidden>
     <div class="container cors-inner">
       <p>⚠️ Estás abriendo el archivo localmente sin servidor. Selecciona tu <code>datos.json</code> para visualizarlo o súbelo a un servidor/GitHub Pages.</p>
@@ -70,7 +70,7 @@
         <div class="hero-content">
           <span class="hero-kicker">TEMPORADA OFICIAL · ROCKET LEAGUE</span>
           <h1>Centro Internacional de Selecciones y Ligas</h1>
-          <p>Consulta resultados serie por serie, estadísticas oficiales por partida, convocatorias activas y el Ranking Mundial actualizado.</p>
+          <p>Consulta resultados serie por serie, estadísticas oficiales por partida, convocatorias activas, confederaciones y el Ranking Mundial actualizado.</p>
           <div class="hero-actions">
             <button class="btn btn-gold" data-jump="partidos">Ver Partidos</button>
             <button class="btn btn-glass" data-jump="ranking">Ranking Mundial</button>
@@ -80,19 +80,10 @@
       </div>
 
       <div class="widgets-grid">
-        <!-- Widget Última Noticia -->
         <article class="widget widget-wide" id="widget-noticia"></article>
-
-        <!-- Widget Partidos Recientes / Próximos -->
         <article class="widget" id="widget-partidos"></article>
-
-        <!-- Widget Top 5 Selecciones -->
         <article class="widget" id="widget-top-selecciones"></article>
-
-        <!-- Widget Top 5 Ligas -->
         <article class="widget" id="widget-top-ligas"></article>
-
-        <!-- Widget Próxima Competición -->
         <article class="widget" id="widget-competicion"></article>
       </div>
     </section>
@@ -101,10 +92,15 @@
     <section id="view-afiliados" class="view-section">
       <div class="section-head">
         <div>
-          <span class="section-tag">FEDERACIONES MIEMBRO</span>
+          <span class="section-tag">FEDERACIONES MIEMBRO · HAZ CLIC PARA VER FICHA COMPLETA</span>
           <h2>Ligas Afiliadas</h2>
         </div>
-        <span class="section-counter" id="count-afiliados"></span>
+        <div class="filter-bar">
+          <select id="filtro-conf-afiliados" class="select-input">
+            <option value="todas">Todas las confederaciones</option>
+          </select>
+          <span class="section-counter" id="count-afiliados"></span>
+        </div>
       </div>
       <div id="grid-afiliados" class="cards-grid cols-3"></div>
     </section>
@@ -113,10 +109,13 @@
     <section id="view-selecciones" class="view-section">
       <div class="section-head">
         <div>
-          <span class="section-tag">CONVOCATORIAS OFICIALES</span>
+          <span class="section-tag">CONVOCATORIAS OFICIALES · HAZ CLIC PARA VER FICHA COMPLETA</span>
           <h2>Selecciones Nacionales</h2>
         </div>
         <div class="filter-bar">
+          <select id="filtro-conf-seleccion" class="select-input">
+            <option value="todas">Todas las confederaciones</option>
+          </select>
           <select id="filtro-liga-seleccion" class="select-input">
             <option value="todas">Todas las ligas</option>
           </select>
@@ -148,9 +147,14 @@
           <span class="section-tag">CLASIFICACIÓN OFICIAL</span>
           <h2>Ranking Mundial</h2>
         </div>
-        <div class="segmented-control" id="ranking-switcher">
-          <button class="seg-btn active" data-rank="selecciones">🌍 Selecciones</button>
-          <button class="seg-btn" data-rank="ligas">🛡️ Ligas (1-10)</button>
+        <div class="filter-bar">
+          <select id="filtro-conf-ranking" class="select-input">
+            <option value="todas">Todas las confederaciones</option>
+          </select>
+          <div class="segmented-control" id="ranking-switcher">
+            <button class="seg-btn active" data-rank="selecciones">🌍 Selecciones</button>
+            <button class="seg-btn" data-rank="ligas">🛡️ Ligas (1-10)</button>
+          </div>
         </div>
       </div>
 
@@ -163,6 +167,7 @@
                 <tr>
                   <th>Pos</th>
                   <th>Selección</th>
+                  <th>Confederación</th>
                   <th>Liga Afiliada</th>
                   <th class="num">Pts Previos</th>
                   <th class="num">Cambio</th>
@@ -216,14 +221,19 @@
     </div>
   </footer>
 
-  <!-- MODAL: DETALLE DE SELECCIÓN Y PLANTILLA -->
+  <!-- MODAL: FICHA COMPLETA DE LIGA AFILIADA -->
+  <div id="modal-liga" class="modal-overlay" hidden>
+    <div class="modal-box large profile-modal">
+      <button class="modal-close floating-close" data-close="modal-liga" aria-label="Cerrar">&times;</button>
+      <div class="modal-body profile-body" id="modal-liga-body"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: FICHA COMPLETA DE SELECCIÓN Y PLANTILLA -->
   <div id="modal-seleccion" class="modal-overlay" hidden>
-    <div class="modal-box large">
-      <div class="modal-header">
-        <div id="modal-sel-header" class="modal-title-group"></div>
-        <button class="modal-close" data-close="modal-seleccion" aria-label="Cerrar">&times;</button>
-      </div>
-      <div class="modal-body" id="modal-sel-body"></div>
+    <div class="modal-box large profile-modal">
+      <button class="modal-close floating-close" data-close="modal-seleccion" aria-label="Cerrar">&times;</button>
+      <div class="modal-body profile-body" id="modal-sel-body"></div>
     </div>
   </div>
 
