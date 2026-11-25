@@ -1,0 +1,38 @@
+{
+  "ultimaActualizacion": "2026-11-25",
+  "afiliados": [
+    {
+      "id": 1,
+      "nombre": "BLITZ MX",
+      "region": "NA",
+      "logo": "https://media.discordapp.net/attachments/1558374152723759155/1575251384578609303/logo.png?ex=6b089aac&is=6b07492c&hm=e3b1e5e873efa08a62b02e11838d5ab8c898f598fc6c64f6ee33a6680da4d66e&format=webp&quality=lossless&width=384&height=384",
+      "equipos": 12,
+      "estado": "Activa",
+      "descripcion": ""
+    }
+  ],
+  "selecciones": [
+    {
+      "id": 1,
+      "nombre": "Seleccion de México",
+      "tag": "MEX",
+      "ligaAfiliadaId": 1,
+      "logo": "https://media.discordapp.net/attachments/1558374152723759155/1575251861211189403/iu_.png?ex=6b089b1e&is=6b07499e&hm=d29fcbdf2e220d678ab96378791533a08f26e3119fc5f7651ee39ad1ddb95180&format=webp&quality=lossless",
+      "puntosAnteriores": 1500,
+      "puntosActuales": 1500
+    }
+  ],
+  "jugadores": [],
+  "partidos": [],
+  "rankingLigas": [
+    {
+      "ligaId": 1,
+      "organizacion": 5,
+      "staff": 5,
+      "actividad": 5,
+      "competencia": 5
+    }
+  ],
+  "noticias": [],
+  "competiciones": []
+}
