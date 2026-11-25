@@ -44,6 +44,19 @@
       "estado": "Activa",
       "descripcion": "",
       "competicionesIds": []
+    },
+    {
+      "id": 3,
+      "nombre": "LIGA 1 MAX RL",
+      "region": "SAM",
+      "confederacionId": 2,
+      "discord": "https://discord.gg/4QSyA2VgBT",
+      "logo": "https://media.discordapp.net/attachments/1575268193835163729/1575270039878111363/l1max_icon_5a083b4911.png?ex=6b08ac0c&is=6b075a8c&hm=d219f104533c7c4dc1844f0e81b5389c648d347ee26831a018d6ad287cffdab9&format=webp&quality=lossless",
+      "banner": "https://media.discordapp.net/attachments/1575268193835163729/1575270101765329020/og-image-L1max.png?ex=6b08ac1b&is=6b075a9b&hm=e4e60646765b9a17791e37cfaeecaafa3ad430b150e8abd48dbdd238fb6f69a3&format=webp&quality=lossless",
+      "equipos": 18,
+      "estado": "Activa",
+      "descripcion": "",
+      "competicionesIds": []
     }
   ],
   "selecciones": [
@@ -71,6 +84,13 @@
     },
     {
       "ligaId": 2,
+      "organizacion": 5,
+      "staff": 5,
+      "actividad": 5,
+      "competencia": 5
+    },
+    {
+      "ligaId": 3,
       "organizacion": 5,
       "staff": 5,
       "actividad": 5,
