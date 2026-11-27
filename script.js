@@ -1,6 +1,7 @@
 /* =========================================================
-   FIFA ROCKET LEAGUE - VIEWER PÚBLICO v2.1
+   FIFA ROCKET LEAGUE - VIEWER PÚBLICO v2.2
    - Fichas completas con fondo difuminado para Ligas y Selecciones
+   - Soporte para series personalizadas (N partidas) y Empates (G-E-P)
    - Historial completo de partidos por selección con acceso a stats
    - Confederaciones con herencia automática Liga -> Selección
    - Filtros por confederación en Afiliados, Selecciones y Ranking
@@ -10,6 +11,19 @@
 const PLACEHOLDER_LOGO = "https://via.placeholder.com/120/041e42/d4af37?text=RL";
 const PLACEHOLDER_BANNER = "https://via.placeholder.com/960x360/041e42/d4af37?text=FIFA+ROCKET+LEAGUE";
 const THEME_KEY = "fifa_rl_theme";
+
+(function inyectarEstilosEmpate() {
+  if (document.getElementById("style-draw-support")) return;
+  const style = document.createElement("style");
+  style.id = "style-draw-support";
+  style.textContent = `
+    .result-pill.draw { background: rgba(212, 175, 55, 0.22); color: var(--fifa-gold-dark); }
+    [data-theme="dark"] .result-pill.draw { color: var(--fifa-gold); }
+    .history-summary-strip.five-cols { grid-template-columns: repeat(5, 1fr); }
+    @media (max-width: 720px) { .history-summary-strip.five-cols { grid-template-columns: repeat(2, 1fr); } }
+  `;
+  document.head.appendChild(style);
+})();
 
 let datos = normalizarDatos({});
 
@@ -68,6 +82,13 @@ function normalizarDatos(raw) {
     competicionesIds: Array.isArray(s.competicionesIds) ? s.competicionesIds.map(Number) : [],
     puntosAnteriores: Number(s.puntosAnteriores ?? 1500),
     puntosActuales: Number(s.puntosActuales ?? 1500)
+  }));
+
+  base.partidos = (base.partidos || []).map((p) => ({
+    ...p,
+    esCustom: Boolean(p.esCustom),
+    totalPartidas: p.totalPartidas ? Number(p.totalPartidas) : null,
+    games: Array.isArray(p.games) ? p.games : []
   }));
 
   return base;
@@ -369,14 +390,18 @@ function renderHome() {
               .map((p) => {
                 const l = getSeleccion(p.localId);
                 const v = getSeleccion(p.visitanteId);
-                const score = p.estado === "Finalizado" ? `${p.seriesLocal} - ${p.seriesVisitante}` : "VS";
+                const finalizado = p.estado === "Finalizado";
+                const esEmpate = finalizado && p.seriesLocal === p.seriesVisitante;
+                const score = finalizado ? `${p.seriesLocal} - ${p.seriesVisitante}` : "VS";
+                const estadoTexto = finalizado ? (esEmpate ? "Empate" : "Finalizado") : p.estado;
+                const estadoClase = finalizado ? (esEmpate ? "gold" : "green") : "gold";
                 return `
                   <div class="mini-row" onclick="abrirModalPartido(${p.id})">
                     <div class="mini-left">
                       <span class="badge">${esc(p.formato)}</span>
                       <strong>${esc(l?.tag || "?")} ${score} ${esc(v?.tag || "?")}</strong>
                     </div>
-                    <span class="badge ${p.estado === "Finalizado" ? "green" : "gold"}">${esc(p.estado)}</span>
+                    <span class="badge ${estadoClase}">${esc(estadoTexto)}</span>
                   </div>
                 `;
               })
@@ -576,7 +601,6 @@ window.abrirModalLiga = function (ligaId) {
       ${liga.descripcion ? `<p class="muted" style="margin-bottom:18px;font-size:.9rem;">${esc(liga.descripcion)}</p>` : ""}
 
       <div class="profile-grid">
-        <!-- Info Institucional -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>🛡️ Datos Institucionales</span>
@@ -604,7 +628,6 @@ window.abrirModalLiga = function (ligaId) {
           </div>
         </div>
 
-        <!-- Calificación Global -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>⭐ Calificación Global FIFA</span>
@@ -618,7 +641,6 @@ window.abrirModalLiga = function (ligaId) {
           </div>
         </div>
 
-        <!-- Selecciones Afiliadas -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>🌍 Selección(es) Afiliada(s) (${selecciones.length})</span>
@@ -647,7 +669,6 @@ window.abrirModalLiga = function (ligaId) {
           }
         </div>
 
-        <!-- Competiciones -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>🥇 Competiciones en las que participa (${competiciones.length})</span>
@@ -762,11 +783,18 @@ window.abrirModalSeleccion = function (seleccionId) {
   const partidosJugados = datos.partidos.filter(
     (p) => p.estado === "Finalizado" && (p.localId === sel.id || p.visitanteId === sel.id)
   );
-  const victorias = partidosJugados.filter(
-    (p) =>
-      (p.localId === sel.id && p.seriesLocal > p.seriesVisitante) ||
-      (p.visitanteId === sel.id && p.seriesVisitante > p.seriesLocal)
-  ).length;
+
+  let victorias = 0;
+  let empates = 0;
+  let derrotas = 0;
+  partidosJugados.forEach((p) => {
+    const esLocal = p.localId === sel.id;
+    const favor = esLocal ? p.seriesLocal : p.seriesVisitante;
+    const contra = esLocal ? p.seriesVisitante : p.seriesLocal;
+    if (favor > contra) victorias++;
+    else if (favor < contra) derrotas++;
+    else empates++;
+  });
 
   document.getElementById("modal-sel-body").innerHTML = `
     <div class="profile-hero">
@@ -790,7 +818,6 @@ window.abrirModalSeleccion = function (seleccionId) {
       </div>
 
       <div class="profile-grid">
-        <!-- Datos de la Selección -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>🌍 Información Oficial</span>
@@ -805,7 +832,7 @@ window.abrirModalSeleccion = function (seleccionId) {
             </div>
             <div class="kv-item clickable" onclick="abrirModalHistorialSeleccion(${sel.id})" role="button" tabindex="0">
               <small>Historial de Series</small>
-              <strong>⚽ ${victorias}G - ${partidosJugados.length - victorias}P (${partidosJugados.length} jug.)</strong>
+              <strong>⚽ ${victorias}G - ${empates}E - ${derrotas}P (${partidosJugados.length} jug.)</strong>
               <span class="kv-action-link">Ver historial completo →</span>
             </div>
           </div>
@@ -829,7 +856,6 @@ window.abrirModalSeleccion = function (seleccionId) {
           </div>
         </div>
 
-        <!-- Competiciones -->
         <div class="profile-box">
           <div class="profile-box-title">
             <span>🥇 Competiciones en las que participa (${competiciones.length})</span>
@@ -855,7 +881,6 @@ window.abrirModalSeleccion = function (seleccionId) {
           }
         </div>
 
-        <!-- Plantilla Activa -->
         <div class="profile-box full">
           <div class="profile-box-title">
             <span>👥 Convocatoria Activa (${convocados.length} jugadores)</span>
@@ -914,6 +939,7 @@ window.abrirModalHistorialSeleccion = function (seleccionId) {
     .sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")) || b.id - a.id);
 
   let victorias = 0;
+  let empates = 0;
   let derrotas = 0;
 
   const filasHtml = partidosJugados
@@ -922,14 +948,24 @@ window.abrirModalHistorialSeleccion = function (seleccionId) {
       const rival = getSeleccion(esLocal ? p.visitanteId : p.localId);
       const ptsFavor = esLocal ? p.seriesLocal : p.seriesVisitante;
       const ptsContra = esLocal ? p.seriesVisitante : p.seriesLocal;
-      const gano = ptsFavor > ptsContra;
 
-      if (gano) victorias++;
-      else derrotas++;
+      let claseRes = "draw";
+      let textoRes = "Empate";
+      if (ptsFavor > ptsContra) {
+        victorias++;
+        claseRes = "win";
+        textoRes = "Victoria";
+      } else if (ptsFavor < ptsContra) {
+        derrotas++;
+        claseRes = "loss";
+        textoRes = "Derrota";
+      } else {
+        empates++;
+      }
 
       return `
         <div class="history-row" onclick="abrirModalPartido(${p.id})" title="Clic para ver estadísticas por partida">
-          <span class="result-pill ${gano ? "win" : "loss"}">${gano ? "Victoria" : "Derrota"}</span>
+          <span class="result-pill ${claseRes}">${textoRes}</span>
 
           <div class="history-rival">
             <img class="avatar-sm" src="${esc(rival?.logo || PLACEHOLDER_LOGO)}" alt="" onerror="this.src='${PLACEHOLDER_LOGO}'" />
@@ -954,7 +990,7 @@ window.abrirModalHistorialSeleccion = function (seleccionId) {
     .join("");
 
   const total = partidosJugados.length;
-  const efectividad = total ? Math.round((victorias / total) * 100) : 0;
+  const efectividad = total ? Math.round(((victorias + empates * 0.5) / total) * 100) : 0;
 
   document.getElementById("modal-historial-header").innerHTML = `
     <img class="avatar-sm" src="${esc(sel.logo || PLACEHOLDER_LOGO)}" alt="" onerror="this.src='${PLACEHOLDER_LOGO}'" />
@@ -969,7 +1005,7 @@ window.abrirModalHistorialSeleccion = function (seleccionId) {
       <button type="button" class="btn btn-outline btn-sm" onclick="abrirModalSeleccion(${sel.id})">← Volver a ficha de ${esc(sel.nombre)}</button>
     </div>
 
-    <div class="history-summary-strip">
+    <div class="history-summary-strip five-cols">
       <div class="history-stat-box">
         <strong>${total}</strong>
         <small>Jugados</small>
@@ -977,6 +1013,10 @@ window.abrirModalHistorialSeleccion = function (seleccionId) {
       <div class="history-stat-box">
         <strong style="color:var(--positive);">${victorias}</strong>
         <small>Victorias</small>
+      </div>
+      <div class="history-stat-box">
+        <strong style="color:var(--fifa-gold);">${empates}</strong>
+        <small>Empates</small>
       </div>
       <div class="history-stat-box">
         <strong style="color:var(--negative);">${derrotas}</strong>
@@ -1022,6 +1062,7 @@ function renderPartidos() {
       const local = getSeleccion(p.localId);
       const vis = getSeleccion(p.visitanteId);
       const finalizado = p.estado === "Finalizado";
+      const esEmpate = finalizado && p.seriesLocal === p.seriesVisitante;
 
       return `
         <article class="match-card clickable" onclick="abrirModalPartido(${p.id})">
@@ -1041,7 +1082,9 @@ function renderPartidos() {
             }
             <div class="match-meta-row">
               <span class="badge">${esc(p.formato)}</span>
-              <span class="badge ${finalizado ? "green" : "gold"}">${esc(p.estado)}</span>
+              <span class="badge ${finalizado ? (esEmpate ? "gold" : "green") : "gold"}">
+                ${finalizado ? (esEmpate ? "Empate" : "Finalizado") : esc(p.estado)}
+              </span>
             </div>
             <div class="muted" style="font-size:.74rem;margin-top:4px;">
               ${esc(p.tipo)} · ${esc(p.fecha)} ${esc(p.hora || "")}
@@ -1076,6 +1119,7 @@ window.abrirModalPartido = function (partidoId) {
   const local = getSeleccion(p.localId);
   const vis = getSeleccion(p.visitanteId);
   const body = document.getElementById("modal-partido-body");
+  const esEmpate = p.estado === "Finalizado" && p.seriesLocal === p.seriesVisitante;
 
   const scoreboardHtml = `
     <div class="mc-scoreboard">
@@ -1090,7 +1134,9 @@ window.abrirModalPartido = function (partidoId) {
         <div style="font-size:2.1rem;font-weight:900;color:var(--fifa-gold);letter-spacing:3px;">
           ${p.estado === "Finalizado" ? `${p.seriesLocal} - ${p.seriesVisitante}` : "VS"}
         </div>
-        <div style="font-size:.78rem;color:#cbd5e1;">${esc(p.formato)} · ${esc(p.tipo)} · ${esc(p.fecha)}</div>
+        <div style="font-size:.78rem;color:#cbd5e1;">
+          ${esc(p.formato)}${esEmpate ? " · Empate" : ""} · ${esc(p.tipo)} · ${esc(p.fecha)}
+        </div>
       </div>
       <div class="match-team away">
         <div>
@@ -1253,7 +1299,6 @@ document.getElementById("filtro-conf-ranking").addEventListener("change", (e) =>
 });
 
 function renderRanking() {
-  // A. Selecciones (filtrable por confederación heredada)
   const ordenadas = getSeleccionesOrdenadas().filter((s) => {
     if (filtroConfRanking === "todas") return true;
     const conf = getConfederacionDeSeleccion(s);
@@ -1304,7 +1349,6 @@ function renderRanking() {
       .join("");
   }
 
-  // B. Ligas (filtrable por confederación)
   const ligasOrdenadas = getLigasOrdenadas().filter((item) => {
     if (filtroConfRanking === "todas") return true;
     return String(item.liga.confederacionId) === String(filtroConfRanking);
